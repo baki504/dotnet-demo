@@ -5,7 +5,7 @@
 - **プロジェクトタイプ**: Greenfield
 - **ワークスペースルート**: /Users/takadayu/dev/gitrepo/amv/dotnet-demo
 - **アーキテクチャ**: DDD 4層（Domain / Application / Infrastructure / Web）
-- **技術スタック**: .NET 8, ASP.NET Core MVC, EF Core, SQL Server (Docker)
+- **技術スタック**: .NET 10, ASP.NET Core MVC, EF Core, SQL Server (Docker)
 - **認証**: OAuth2 / OpenID Connect
 - **開発手法**: TDD（テスト駆動開発）- テストを先に書き、実装はテストを通すために書く
 
@@ -19,16 +19,19 @@
 ## ソリューション構成
 
 ```
-/Users/takadayu/dev/gitrepo/amv/dotnet-demo/
-+-- HrAttendance.sln
-+-- HrAttendance/
-|   +-- Domain/          (HrAttendance.Domain.csproj)
-|   +-- Application/     (HrAttendance.Application.csproj)
-|   +-- Infrastructure/  (HrAttendance.Infrastructure.csproj)
-|   +-- Web/             (HrAttendance.Web.csproj)
-+-- HrAttendanceTests/
-|   +-- Domain/          (HrAttendance.Domain.Tests.csproj)
-|   +-- Application/     (HrAttendance.Application.Tests.csproj)
+/Users/takadayu/dev/gitrepo/dotnet-demo/
++-- HrAttendance.slnx
++-- HrAttendance/               (HrAttendance.csproj - Web SDK)
+|   +-- Domain/                 (名前空間: HrAttendance.Domain)
+|   |   +-- ValueObjects/
+|   |   +-- Entities/
+|   |   +-- Services/
+|   +-- Application/            (名前空間: HrAttendance.Application)
+|   +-- Infrastructure/         (名前空間: HrAttendance.Infrastructure)
+|   +-- Web/                    (名前空間: HrAttendance.Web)
++-- HrAttendanceTests/          (HrAttendanceTests.csproj - xUnit)
+|   +-- Domain/                 (名前空間: HrAttendanceTests.Domain)
+|   +-- Application/            (名前空間: HrAttendanceTests.Application)
 +-- docker-compose.yml
 ```
 
@@ -46,15 +49,12 @@
 ## 実行ステップ
 
 ### Step 1: プロジェクト構造セットアップ
-- [ ] ソリューション (HrAttendance.sln) 作成
-- [ ] HrAttendance/Domain プロジェクト作成 (classlib)
-- [ ] HrAttendance/Application プロジェクト作成 (classlib)
-- [ ] HrAttendance/Infrastructure プロジェクト作成 (classlib)
-- [ ] HrAttendance/Web プロジェクト作成 (web/mvc)
-- [ ] HrAttendanceTests/Domain テストプロジェクト作成 (xunit)
-- [ ] HrAttendanceTests/Application テストプロジェクト作成 (xunit)
-- [ ] プロジェクト参照の設定
-- [ ] docker-compose.yml 作成 (SQL Server - Azure SQL Edge)
+- [x] ソリューション (HrAttendance.slnx) 作成 ※.NET 10では.slnx形式
+- [x] HrAttendance プロジェクト作成 (Web SDK, Domain/Application/Infrastructure/Webはフォルダで分離)
+- [x] HrAttendanceTests プロジェクト作成 (xunit, Domain/Applicationはフォルダで分離)
+- [x] プロジェクト参照の設定 (HrAttendanceTests → HrAttendance)
+- [x] docker-compose.yml 作成 (SQL Server - Azure SQL Edge)
+- [x] .gitignore 更新 (bin/, obj/ 除外)
 
 ### Step 2: Domain層 TDD - 値オブジェクト・Enum（Red → Green → Refactor）
 - [ ] **RED**: WorkDuration テスト作成（演算、比較、ゼロ値、FromMinutes）

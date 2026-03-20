@@ -50,3 +50,4 @@
 - [ ] EF Core の非同期メソッド（FirstOrDefaultAsync, ToListAsync, SaveChangesAsync）を使用しているか
 - [ ] リポジトリがドメインインターフェースの契約を正しく実装しているか
 - [ ] クエリロジックがリポジトリ内に閉じているか（LINQ のリーク防止）
+- [ ] 生SQL（FromSqlRaw/ExecuteSqlRaw）を使う場合、パラメータ化されているか（SQLインジェクション対策）

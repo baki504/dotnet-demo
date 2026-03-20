@@ -177,7 +177,7 @@
 
 ### YearMonth
 - 内部表現: int year, int month
-- `Create(year, month)` - ファクトリ（1-12月の範囲チェック）
+- `Of(year, month)` - ファクトリ（1-12月の範囲チェック）
 - `GetFirstDay()` → DateOnly
 - `GetLastDay()` → DateOnly
 - `ToString()` → "2026-03" 形式

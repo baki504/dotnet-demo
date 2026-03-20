@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="HrAttendance/HrAttendance.csproj" />
+  <Project Path="HrAttendanceTests/HrAttendanceTests.csproj" />
+</Solution>

@@ -75,7 +75,7 @@
 
 ### YearMonth（値オブジェクト）
 ```
-- YearMonth.Create(year, month) -> YearMonth
+- YearMonth.Of(year, month) -> YearMonth
 - GetFirstDay() -> DateOnly
 - GetLastDay() -> DateOnly
 - ToString() -> string  # "2026-03" 形式
