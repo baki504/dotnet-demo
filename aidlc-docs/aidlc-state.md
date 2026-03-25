@@ -33,22 +33,24 @@
 - [x] Requirements Analysis
 - [x] User Stories (SKIPPED - PoC、スコープ明確)
 - [x] Workflow Planning
-- [x] Application Design
+- [x] Application Design (DDD 4層 → 承認済み)
+- [x] Application Design (Hexagonal) - 承認済み
 - [x] Units Generation (SKIPPED - 単一ユニット)
 
 ### CONSTRUCTION PHASE
-- [x] Functional Design - COMPLETE
+- [x] Functional Design - COMPLETE (ヘキサゴナル対応更新済み)
 - [x] NFR Requirements (SKIPPED - PoC)
 - [x] NFR Design (SKIPPED - PoC)
 - [x] Infrastructure Design (SKIPPED - ローカルのみ)
-- [ ] Code Generation - EXECUTE
+- [ ] Code Generation - PENDING (アーキテクチャ変更後に再開)
 - [ ] Build and Test - EXECUTE
 
 ### OPERATIONS PHASE
 - [ ] Operations (PLACEHOLDER)
 
 ## Current Status
-- **Lifecycle Phase**: CONSTRUCTION
+- **Lifecycle Phase**: INCEPTION (アーキテクチャ変更による再設計)
 - **Current Stage**: Code Generation
 - **Next Stage**: Build and Test
-- **Status**: Code Generation 進行中
+- **Status**: Code Generation 再開準備（ヘキサゴナルアーキテクチャ対応）
+- **Architecture Change**: DDD 4層 → ヘキサゴナルアーキテクチャ (Ports & Adapters)

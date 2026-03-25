@@ -10,6 +10,7 @@
 - Employee.AddDepartment(department, isPrimary) -> EmployeeDepartment
 - Employee.RemoveDepartment(departmentId) -> void
 - Employee.SetPrimaryDepartment(departmentId) -> void
+- Employee.Delete() -> void  # IsDeleted = true
 ```
 
 ### Department
@@ -37,35 +38,20 @@
 - WorkType.UpdateName(name) -> void
 ```
 
-### AttendanceDomainService
-```
-- ValidateTimeStamp(record, newStampType, timestamp) -> bool
-  # 打刻順序の検証（出勤→休憩開始→休憩終了→退勤）
-  # 二重打刻の防止
-```
-
 ### MonthlyAttendanceSummary（リッチドメインモデル）
 ```
 - MonthlyAttendanceSummary.Build(employee, departmentName, records, workTypes) -> MonthlyAttendanceSummary
-  # 複数テーブルの生データからサマリーを構築（ファクトリメソッド）
 - GetTotalWorkDays() -> int
-  # 勤務区分が出勤日(IsWorkDay=true)のレコード数を集計
 - GetTotalWorkDuration() -> WorkDuration
-  # 全勤務日の出勤～退勤から休憩を差し引いた実労働時間を合算
 - GetOvertimeDuration(standardHoursPerDay: WorkDuration) -> WorkDuration
-  # 日ごとに所定労働時間を超えた分を残業として合算
 - GetPaidLeaveDays() -> int
-  # 勤務区分が有給休暇のレコード数を集計
 - GetAbsentDays() -> int
-  # 勤務区分が欠勤のレコード数を集計
 - GetWorkDaysByType() -> Dictionary<string, int>
-  # 勤務区分別の日数内訳
 ```
 
 ### WorkDuration（値オブジェクト）
 ```
 - WorkDuration.FromMinutes(minutes) -> WorkDuration
-- WorkDuration.Zero -> WorkDuration
 - Add(other: WorkDuration) -> WorkDuration
 - Subtract(other: WorkDuration) -> WorkDuration
 - IsGreaterThan(other: WorkDuration) -> bool
@@ -81,144 +67,202 @@
 - ToString() -> string  # "2026-03" 形式
 ```
 
+### WorkSession（値オブジェクト）
+```
+- WorkSession.Create(clockIn, clockOut) -> WorkSession
+- Duration -> WorkDuration
+```
+
+### AttendanceDomainService
+```
+- ValidateTimeStamp(record, newStampType, timestamp) -> bool
+  # 打刻順序の検証（出勤→退勤）
+  # 二重打刻の防止
+```
+
 ### MonthlyAttendanceDomainService
 ```
 - BuildSummary(employee, departmentName, records, workTypes) -> MonthlyAttendanceSummary
-  # IMonthlyAttendanceQueryServiceから取得した生データをMonthlyAttendanceSummaryに組み立て
 - BuildSummaries(queryResults) -> List<MonthlyAttendanceSummary>
-  # 複数社員分のサマリーを一括構築
 ```
 
 ---
 
-## Application 層
+## Application/Ports/In（Input Ports）
 
-### EmployeeAppService
+### ICreateEmployeeUseCase
+```
+- ExecuteAsync(dto: CreateEmployeeDto) -> EmployeeDto
+```
+
+### IUpdateEmployeeUseCase
+```
+- ExecuteAsync(id: Guid, dto: UpdateEmployeeDto) -> EmployeeDto
+```
+
+### IDeleteEmployeeUseCase
+```
+- ExecuteAsync(id: Guid) -> void
+```
+
+### IGetEmployeeUseCase
 ```
 - GetAllAsync(searchTerm?) -> List<EmployeeDto>
-- GetByIdAsync(id) -> EmployeeDto?
-- CreateAsync(dto: CreateEmployeeDto) -> EmployeeDto
-- UpdateAsync(id, dto: UpdateEmployeeDto) -> EmployeeDto
-- DeleteAsync(id) -> void
-- AssignDepartmentAsync(employeeId, departmentId, isPrimary) -> void
-- RemoveDepartmentAsync(employeeId, departmentId) -> void
+- GetByIdAsync(id: Guid) -> EmployeeDto?
 ```
 
-### DepartmentAppService
+### IManageDepartmentUseCase
 ```
 - GetAllAsync(searchTerm?) -> List<DepartmentDto>
-- GetByIdAsync(id) -> DepartmentDto?
+- GetByIdAsync(id: Guid) -> DepartmentDto?
 - CreateAsync(dto: CreateDepartmentDto) -> DepartmentDto
-- UpdateAsync(id, dto: UpdateDepartmentDto) -> DepartmentDto
-- DeleteAsync(id) -> void
+- UpdateAsync(id: Guid, dto: UpdateDepartmentDto) -> DepartmentDto
+- DeleteAsync(id: Guid) -> void
 ```
 
-### AttendanceAppService
+### IAssignDepartmentUseCase
+```
+- AssignAsync(employeeId: Guid, departmentId: Guid, isPrimary: bool) -> void
+- RemoveAsync(employeeId: Guid, departmentId: Guid) -> void
+```
+
+### IStampAttendanceUseCase
+```
+- ExecuteAsync(employeeId: Guid, stampType: TimeStampType, timestamp?: DateTime) -> TimeStampEntryDto
+```
+
+### IGetAttendanceUseCase
 ```
 - GetByDateRangeAsync(criteria: AttendanceSearchCriteria) -> List<AttendanceRecordDto>
-- GetByEmployeeAndDateAsync(employeeId, date) -> AttendanceRecordDto?
-- StampAsync(employeeId, stampType, timestamp?) -> TimeStampEntryDto
-- UpdateRecordAsync(recordId, dto) -> AttendanceRecordDto
+- GetByEmployeeAndDateAsync(employeeId: Guid, date: DateOnly) -> AttendanceRecordDto?
 ```
 
-### WorkTypeAppService
+### IUpdateAttendanceUseCase
+```
+- ExecuteAsync(recordId: Guid, dto: UpdateAttendanceDto) -> AttendanceRecordDto
+```
+
+### IManageWorkTypeUseCase
 ```
 - GetAllAsync() -> List<WorkTypeDto>
-- GetByIdAsync(id) -> WorkTypeDto?
+- GetByIdAsync(id: Guid) -> WorkTypeDto?
 - CreateAsync(dto: CreateWorkTypeDto) -> WorkTypeDto
-- UpdateAsync(id, dto: CreateWorkTypeDto) -> WorkTypeDto
-- DeleteAsync(id) -> void
+- UpdateAsync(id: Guid, dto: CreateWorkTypeDto) -> WorkTypeDto
+- DeleteAsync(id: Guid) -> void
 ```
 
-### MonthlyAttendanceAppService
+### IGetMonthlySummaryUseCase
 ```
-- GetMonthlySummariesAsync(yearMonth: YearMonth, departmentId?) -> List<MonthlyAttendanceSummaryDto>
-  # IMonthlyAttendanceQueryService でデータ取得
-  # → MonthlyAttendanceDomainService でリッチドメインモデル構築
-  # → DTO変換して返却
-- GetMonthlySummaryByEmployeeAsync(employeeId, yearMonth: YearMonth) -> MonthlyAttendanceSummaryDto?
-  # 特定社員の月次サマリーを取得
+- GetSummariesAsync(yearMonth: YearMonth, departmentId?: Guid) -> List<MonthlyAttendanceSummaryDto>
+- GetSummaryByEmployeeAsync(employeeId: Guid, yearMonth: YearMonth) -> MonthlyAttendanceSummaryDto?
 ```
 
 ---
 
-## Presentation 層 (Controller)
+## Application/Ports/Out（Output Ports）
+
+### IEmployeeRepository
+```
+- GetAllAsync(searchTerm?, includeDeleted?: bool) -> List<Employee>
+- GetByIdAsync(id: Guid) -> Employee?
+- AddAsync(employee: Employee) -> void
+- UpdateAsync(employee: Employee) -> void
+- ExistsByEmployeeNumberAsync(employeeNumber: string) -> bool
+- ExistsByEmailAsync(email: string) -> bool
+```
+
+### IDepartmentRepository
+```
+- GetAllAsync(searchTerm?) -> List<Department>
+- GetByIdAsync(id: Guid) -> Department?
+- AddAsync(department: Department) -> void
+- UpdateAsync(department: Department) -> void
+- DeleteAsync(department: Department) -> void
+- HasEmployeesAsync(id: Guid) -> bool
+```
+
+### IAttendanceRepository
+```
+- GetByIdAsync(id: Guid) -> AttendanceRecord?
+- GetByEmployeeAndDateAsync(employeeId: Guid, date: DateOnly) -> List<AttendanceRecord>
+- SearchAsync(criteria: AttendanceSearchCriteria) -> List<AttendanceRecord>
+- AddAsync(record: AttendanceRecord) -> void
+- UpdateAsync(record: AttendanceRecord) -> void
+```
+
+### IWorkTypeRepository
+```
+- GetAllAsync() -> List<WorkType>
+- GetByIdAsync(id: Guid) -> WorkType?
+- GetByCodeAsync(code: string) -> WorkType?
+- AddAsync(workType: WorkType) -> void
+- UpdateAsync(workType: WorkType) -> void
+- DeleteAsync(workType: WorkType) -> void
+- HasAttendanceRecordsAsync(id: Guid) -> bool
+```
+
+### IMonthlyAttendanceQueryService
+```
+- GetMonthlyDataAsync(yearMonth: YearMonth, departmentId?: Guid) -> List<MonthlyAttendanceRawData>
+```
+
+---
+
+## Adapters/In/Web（Controller）
 
 ### EmployeesController
 ```
 - Index(searchTerm?) -> IActionResult
-  # EmployeeAppService.GetAllAsync() → EmployeeListViewModel へ変換 → View返却
 - Details(id) -> IActionResult
-  # EmployeeAppService.GetByIdAsync() → EmployeeDetailViewModel へ変換 → View返却
 - Create() -> IActionResult [GET]
-  # 空の EmployeeFormModel + 部署リスト → View返却
 - Create(EmployeeFormModel) -> IActionResult [POST]
-  # バリデーション → CreateEmployeeDto へ変換 → EmployeeAppService.CreateAsync() → Redirect
 - Edit(id) -> IActionResult [GET]
-  # EmployeeAppService.GetByIdAsync() → EmployeeFormModel へ変換 → View返却
 - Edit(id, EmployeeFormModel) -> IActionResult [POST]
-  # バリデーション → UpdateEmployeeDto へ変換 → EmployeeAppService.UpdateAsync() → Redirect
 - Delete(id) -> IActionResult [GET]
-  # 削除確認画面表示
 - DeleteConfirmed(id) -> IActionResult [POST]
-  # EmployeeAppService.DeleteAsync() → Redirect
 ```
 
 ### DepartmentsController
 ```
-# EmployeesController と同パターン。DepartmentAppService を使用。
-# FormModel: DepartmentFormModel
-# ViewModel: DepartmentListViewModel
+# EmployeesController と同パターン。IManageDepartmentUseCase を使用。
 ```
 
 ### WorkTypesController
 ```
-# EmployeesController と同パターン（Delete なし）。WorkTypeAppService を使用。
-# FormModel: WorkTypeFormModel
-# ViewModel: WorkTypeListViewModel
+# EmployeesController と同パターン（Delete なし）。IManageWorkTypeUseCase を使用。
 ```
 
 ### AttendanceController
 ```
 - Index(AttendanceSearchFormModel) -> IActionResult
-  # AttendanceSearchFormModel → AttendanceSearchCriteria 変換
-  # AttendanceAppService.GetByDateRangeAsync() → AttendanceListViewModel へ変換 → View返却
 - Stamp() -> IActionResult [GET]
-  # 現在の打刻状態を取得 → StampViewModel へ変換 → View返却
 - Stamp(stampType) -> IActionResult [POST]
-  # AttendanceAppService.StampAsync() → Redirect
 - Edit(recordId) -> IActionResult [GET]
-  # AttendanceAppService.GetByEmployeeAndDateAsync() → AttendanceEditFormModel へ変換 → View返却
 - Edit(recordId, AttendanceEditFormModel) -> IActionResult [POST]
-  # バリデーション → DTO変換 → AttendanceAppService.UpdateRecordAsync() → Redirect
 ```
 
 ### MonthlyReportController
 ```
 - Index(year?, month?, departmentId?) -> IActionResult
-  # YearMonth構築 → MonthlyAttendanceAppService.GetMonthlySummariesAsync()
-  # → MonthlyReportViewModel へ変換 → View返却
 ```
 
 ### HomeController
 ```
 - Index() -> IActionResult
-  # ダッシュボード表示
 ```
 
 ---
 
-## Infrastructure 層
+## Adapters/Out/Persistence
 
 ### リポジトリ実装（共通パターン）
-各リポジトリは対応するインターフェースを実装し、EF Core を使用してデータアクセスを行う。
+各リポジトリは対応する Output Port インターフェースを実装し、EF Core を使用してデータアクセスを行う。
 
 ### MonthlyAttendanceQueryService
 ```
 - GetMonthlyDataAsync(yearMonth, departmentId?) -> List<MonthlyAttendanceRawData>
   # Employees JOIN EmployeeDepartments JOIN Departments JOIN AttendanceRecords
   #   JOIN TimeStampEntries JOIN WorkTypes
-  # 複数テーブルをJOINして生データを返す（ドメインロジックは持たない）
 ```
 
 ### AppDbContext
@@ -229,5 +273,5 @@
 - DbSet<AttendanceRecord> AttendanceRecords
 - DbSet<TimeStampEntry> TimeStampEntries
 - DbSet<WorkType> WorkTypes
-- OnModelCreating(modelBuilder) # Fluent API設定
+- OnModelCreating(modelBuilder)
 ```

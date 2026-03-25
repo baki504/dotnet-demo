@@ -9,13 +9,13 @@
 
 **TDD対象レイヤー**:
 - Domain層: 値オブジェクト、エンティティ、ドメインサービス、リッチドメインモデル
-- Application層: アプリケーションサービス（リポジトリはモック）
+- Application層: UseCase実装（Output Port はモック）
 
 ---
 
 ## サービスフロー
 
-### 1. 打刻フロー（AttendanceAppService.StampAsync）
+### 1. 打刻フロー（StampAttendanceService : IStampAttendanceUseCase）
 
 ```
 入力: employeeId, stampType(ClockIn/ClockOut), timestamp(省略時=現在時刻)
@@ -40,7 +40,7 @@
 5. TimeStampEntryDto を返却
 ```
 
-### 2. 社員登録フロー（EmployeeAppService.CreateAsync）
+### 2. 社員登録フロー（CreateEmployeeService : ICreateEmployeeUseCase）
 
 ```
 入力: CreateEmployeeDto (employeeNumber, name, email, role, departmentId)
@@ -55,7 +55,7 @@
 8. EmployeeDto を返却
 ```
 
-### 3. 社員削除フロー（EmployeeAppService.DeleteAsync）
+### 3. 社員削除フロー（DeleteEmployeeService : IDeleteEmployeeUseCase）
 
 ```
 入力: employeeId
@@ -67,7 +67,7 @@
 ※ EmployeeDepartment、AttendanceRecord は保持（論理削除のため）
 ```
 
-### 4. 勤怠一覧取得フロー（AttendanceAppService.GetByDateRangeAsync）
+### 4. 勤怠一覧取得フロー（GetAttendanceService : IGetAttendanceUseCase）
 
 ```
 入力: AttendanceSearchCriteria (dateFrom, dateTo, employeeId?, departmentId?)
@@ -81,7 +81,7 @@
 5. List<AttendanceRecordDto> を返却
 ```
 
-### 5. 月次勤怠サマリー取得フロー（MonthlyAttendanceAppService.GetMonthlySummariesAsync）
+### 5. 月次勤怠サマリー取得フロー（GetMonthlySummaryService : IGetMonthlySummaryUseCase）
 
 ```
 入力: yearMonth, departmentId?(フィルタ)
@@ -101,7 +101,7 @@
 5. List<MonthlyAttendanceSummaryDto> を返却
 ```
 
-### 6. 勤怠編集フロー（AttendanceAppService.UpdateRecordAsync）
+### 6. 勤怠編集フロー（UpdateAttendanceService : IUpdateAttendanceUseCase）
 
 ```
 入力: recordId, UpdateAttendanceDto

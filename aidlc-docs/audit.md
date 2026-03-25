@@ -126,3 +126,59 @@
 **Context**: CONSTRUCTION - Functional Design, Step 5-6 回答分析・アーティファクト生成
 
 ---
+
+## Architecture Change Request - ヘキサゴナルアーキテクチャ変更
+**Timestamp**: 2026-03-22T00:00:00Z
+**User Input**: "いまからヘキサゴナルアーキテクチャに変更できる？もっとちょうど良いところまで進んだほうが良い？"
+**AI Response**: 現在の実装状況（Value Objects 5つ+テスト5つのみ）を分析し、今が最適なタイミングであると回答。Entity、Service、Application層、Infrastructure層は未着手のためヘキサゴナルへの変更コストは最小。Application Designからやり直す方針を提示。
+**Context**: CONSTRUCTION - Code Generation中断。アーキテクチャ変更の判断。
+
+---
+
+## Architecture Change Confirmation
+**Timestamp**: 2026-03-22T00:01:00Z
+**User Input**: "ヘキサゴナルアーキテクチャに変更で"
+**AI Response**: Application Designをヘキサゴナルアーキテクチャで再設計開始。設計質問ファイルを作成。
+**Context**: INCEPTION - Application Design（ヘキサゴナルアーキテクチャへの再設計）開始
+
+---
+
+## Application Design (Hexagonal) - 質問回答・設計議論
+**Timestamp**: 2026-03-22T00:02:00Z
+**User Input**: Q1:A(UseCase IF定義), Q2:A(単一プロジェクト), Q3:C(構成例を見て判断したい), Q4:Q3と同じ
+**AI Response**: Q3/Q4の曖昧さを検出。3パターンのディレクトリ構成例を提示。
+**Context**: INCEPTION - Application Design, 設計質問回答分析
+
+---
+
+## Application Design (Hexagonal) - 構成議論
+**Timestamp**: 2026-03-22T00:03:00Z
+**User Input**: "ルートからApplication > port > in,out Adapter > port > in,out のようにわけるディレクトリ構成はどうでしょうか" → "DomainはApplicationの中にははいらないのはなぜ？" → Domain内包版を提示 → "UsecasesはServicesの中ではなく？" → Services同居版を提示 → "なんか変じゃない？ちゃんとぜんたいで見直して" → 案2(Domain/Application並列+Adapters)を提示 → "やはりこれがよいですね 案2" → "Application/ServicesはApplication/UseCasesに変えてください"
+**AI Response**: 複数パターンを議論・比較した結果、案2（Domain + Application 並列 + Adapters、In/Out 対称構成）で確定。Application/Services → Application/UseCases にリネーム。設計アーティファクト5ファイルを生成。
+**Context**: INCEPTION - Application Design, ディレクトリ構成の設計議論・確定
+
+---
+
+## Functional Design - ヘキサゴナル対応更新
+**Timestamp**: 2026-03-22T00:05:00Z
+**User Input**: "ok"
+**AI Response**: Functional Designドキュメントをヘキサゴナルアーキテクチャに合わせて更新。business-logic-model.md のサービスフロー見出しをAppService名からUseCase実装名+Port IF名に変更。TDD対象の用語を更新。domain-entities.md, business-rules.md, frontend-components.md はアーキテクチャ非依存のため変更不要。
+**Context**: CONSTRUCTION - Functional Design ヘキサゴナル対応更新完了
+
+---
+
+## Code Generation Plan - ヘキサゴナル用再作成
+**Timestamp**: 2026-03-22T00:06:00Z
+**User Input**: "ok"
+**AI Response**: Code Generation Plan をヘキサゴナルアーキテクチャ用に再作成（13ステップ）。既存Value Objects 5つ+テスト5つはそのまま流用。旧プラン（DDD 4層）を上書き。
+**Context**: CONSTRUCTION - Code Generation Part 1 (Planning)
+
+---
+
+## Application Design (Hexagonal) - 承認
+**Timestamp**: 2026-03-22T00:04:00Z
+**User Input**: "おｋ"
+**AI Response**: Application Design (Hexagonal) 承認完了。Functional Design のヘキサゴナル対応更新へ進行。
+**Context**: INCEPTION - Application Design (Hexagonal) 完了
+
+---

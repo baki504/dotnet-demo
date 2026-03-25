@@ -1,45 +1,61 @@
 # コンポーネント依存関係
 
-## 依存関係マトリクス
+## ヘキサゴナルアーキテクチャ依存ルール
+
+**原則**: 依存方向は常に外側 → 内側。Domain + Application（内側）は Adapters（外側）を知らない。
 
 ```
-                        Domain    Application    Infrastructure    Web
-Domain                    -           -               -            -
-Application             依存          -               -            -
-Infrastructure          依存          -               -            -
-Web                       -         依存              -            -
++---------------------------------------------------------------+
+|                    Adapters/In (Driving)                       |
+|  Web/Controllers -> Input Port IF を通じて UseCase を呼ぶ     |
++---------------------------------------------------------------+
+                             |
+                             v
++---------------------------------------------------------------+
+|                    Application (ユースケース層)                 |
+|  Ports/In:   Input Port インターフェース定義                    |
+|  UseCases:   UseCase 実装（Ports/In を実装）                   |
+|  Ports/Out:  Output Port インターフェース定義                   |
+|  DTOs:       データ転送オブジェクト                              |
++---------------------------------------------------------------+
+                             |
+                             v
++---------------------------------------------------------------+
+|                    Domain (コア・最内層)                        |
+|  Entities:       エンティティ                                   |
+|  ValueObjects:   値オブジェクト                                  |
+|  Services:       ドメインサービス                                |
++---------------------------------------------------------------+
+                             ^
+                             |
++---------------------------------------------------------------+
+|                    Adapters/Out (Driven)                       |
+|  Persistence/Repositories -> Output Port IF を実装             |
++---------------------------------------------------------------+
 ```
-
-**ルール**: 依存方向は常に外側→内側。Domain は何にも依存しない。
 
 ---
 
-## レイヤー間依存関係
+## 依存関係マトリクス
 
 ```
-+--------------------------------------------------+
-|           Web (MVC Controller + Razor View)       |
-|  依存先: Application (AppService, DTO)           |
-+--------------------------------------------------+
-                        |
-                        v
-+--------------------------------------------------+
-|              Application (AppServices)            |
-|  依存先: Domain (Entity, Repository IF, Service) |
-+--------------------------------------------------+
-                        |
-                        v
-+--------------------------------------------------+
-|              Domain (Entities, VOs, IF)           |
-|  依存先: なし                                     |
-+--------------------------------------------------+
-                        ^
-                        |
-+--------------------------------------------------+
-|          Infrastructure (EF Core, Repos)          |
-|  依存先: Domain (Repository IF, Entity)          |
-+--------------------------------------------------+
+                  Domain   App/Ports/In  App/UseCases  App/Ports/Out  Adapters/In  Adapters/Out
+Domain              -          -             -             -             -             -
+App/Ports/In       ※1          -             -             -             -             -
+App/UseCases       依存        依存           -            依存           -             -
+App/Ports/Out      ※2          -             -             -             -             -
+Adapters/In         -         依存            -             -             -             -
+Adapters/Out       ※3          -             -            依存           -             -
 ```
+
+※1: Ports/In の UseCase IF は Domain の DTO・VO を参照（メソッド引数・戻り値）
+※2: Ports/Out の Repository IF は Domain のエンティティ・VO を参照（メソッド引数・戻り値）
+※3: Adapters/Out はエンティティを EF Core でマッピングするため Domain に依存
+
+**重要な依存ルール**:
+- Application/UseCases は Domain と Ports/Out の両方に依存する（UseCase がドメインロジックを使い、Port 経由で外部アクセス）
+- Adapters/In は Ports/In のみに依存（UseCase 実装を直接参照しない）
+- Adapters/Out は Ports/Out と Domain に依存（Port IF を実装し、エンティティをマッピング）
 
 ---
 
@@ -50,52 +66,57 @@ Web                       -         依存              -            -
 [ブラウザ]
     |  HTTP POST (stampType)
     v
-[AttendanceController.Stamp()]
-    |  入力バリデーション
-    |  AttendanceAppService.StampAsync(employeeId, stampType)
+[Adapters/In/Web/AttendanceController.Stamp()]
+    |  FormModel -> DTO 変換
+    |  IStampAttendanceUseCase.ExecuteAsync()   # Input Port 経由
     v
-[AttendanceAppService]
-    |  IAttendanceRepository.GetByEmployeeAndDate()
-    |  AttendanceDomainService.ValidateTimeStamp()
-    |  AttendanceRecord.AddTimeStamp()
-    |  IAttendanceRepository.SaveAsync()
+[Application/UseCases/StampAttendanceService]
+    |  IAttendanceRepository.GetByEmployeeAndDate()  # Output Port 経由
+    |  AttendanceDomainService.ValidateTimeStamp()    # Domain/Services
+    |  AttendanceRecord.AddTimeStamp()                # Domain/Entities
+    |  IAttendanceRepository.AddAsync/UpdateAsync()   # Output Port 経由
     v
-[AttendanceRepository -> AppDbContext -> SQL Server]
+[Adapters/Out/Persistence/AttendanceRepository -> AppDbContext -> SQL Server]
 ```
 
-### 一覧・検索操作
+### 月次勤怠サマリー取得
 ```
 [ブラウザ]
-    |  HTTP GET (searchTerm, dateFrom, dateTo, departmentId)
+    |  HTTP GET (year, month, departmentId?)
     v
-[AttendanceController.Index()]
-    |  AttendanceSearchFormModel → AttendanceSearchCriteria 変換
-    |  AttendanceAppService.GetByDateRangeAsync(criteria)
+[Adapters/In/Web/MonthlyReportController.Index()]
+    |  IGetMonthlySummaryUseCase.GetSummariesAsync()  # Input Port 経由
     v
-[AttendanceAppService]
-    |  IAttendanceRepository.SearchAsync(criteria)
+[Application/UseCases/GetMonthlySummaryService]
+    |  IMonthlyAttendanceQueryService.GetMonthlyDataAsync()  # Output Port 経由
     v
-[AttendanceRepository -> AppDbContext -> SQL Server]
-    |  List<AttendanceRecord>
+[Adapters/Out/Persistence/MonthlyAttendanceQueryService]
+    |  6テーブル JOIN -> MonthlyAttendanceRawData
     v
-[AttendanceAppService]
-    |  Entity -> DTO 変換
+[Application/UseCases/GetMonthlySummaryService]
+    |  MonthlyAttendanceDomainService.BuildSummaries()  # Domain/Services
+    |  MonthlyAttendanceSummary -> MonthlyAttendanceSummaryDto 変換
     v
-[AttendanceController]
-    |  DTO -> AttendanceListViewModel 変換
+[Adapters/In/Web/MonthlyReportController]
+    |  DTO -> MonthlyReportViewModel 変換
     v
-[Razor View (.cshtml) -> ブラウザ]
+[Razor View -> ブラウザ]
 ```
 
 ---
 
-## プロジェクト参照
+## 名前空間と参照ルール
 
-| プロジェクト | 参照先 |
-|-------------|--------|
-| HrAttendance/Domain | (なし) |
-| HrAttendance/Application | HrAttendance/Domain |
-| HrAttendance/Infrastructure | HrAttendance/Domain |
-| HrAttendance/Web | HrAttendance/Application, HrAttendance/Infrastructure (DI登録のみ) |
-| HrAttendanceTests/Domain | HrAttendance/Domain |
-| HrAttendanceTests/Application | HrAttendance/Application, HrAttendance/Domain |
+単一プロジェクトのため名前空間で論理的に分離:
+
+| 名前空間 | 参照可能な名前空間 |
+|---------|-------------------|
+| HrAttendance.Domain.Entities | （なし） |
+| HrAttendance.Domain.ValueObjects | （なし） |
+| HrAttendance.Domain.Services | Domain.Entities, Domain.ValueObjects |
+| HrAttendance.Application.Ports.In | Application.DTOs, Domain.ValueObjects |
+| HrAttendance.Application.Ports.Out | Domain.Entities, Domain.ValueObjects |
+| HrAttendance.Application.UseCases | Domain.*, Application.Ports.Out, Application.DTOs |
+| HrAttendance.Application.DTOs | Domain.ValueObjects |
+| HrAttendance.Adapters.In.Web | Application.Ports.In, Application.DTOs, Domain.ValueObjects |
+| HrAttendance.Adapters.Out.Persistence | Application.Ports.Out, Domain.Entities, Domain.ValueObjects |

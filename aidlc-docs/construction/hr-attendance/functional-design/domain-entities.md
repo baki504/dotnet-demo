@@ -1,5 +1,9 @@
 # ドメインエンティティ詳細設計
 
+## 共通前提
+
+- 日時は全てJST（日本標準時、UTC+9）を前提とする。タイムゾーン変換は行わない。
+
 ## エンティティ一覧（テーブルと1:1）
 
 ### Employee
@@ -169,7 +173,6 @@
 ### WorkDuration
 - 内部表現: int (分)
 - `FromMinutes(minutes)` - ファクトリ
-- `Zero` - ゼロ値
 - `Add(other)` / `Subtract(other)` - 演算
 - `IsGreaterThan(other)` - 比較
 - `ToHoursAndMinutes()` → (hours, minutes)
@@ -184,4 +187,4 @@
 
 ### WorkSession
 - ClockIn / ClockOut のペア
-- `Duration` → ClockOut が null の場合は WorkDuration.Zero
+- `Duration` → ClockOut が null の場合は WorkDuration.FromMinutes(0)
