@@ -1,0 +1,14 @@
+{
+  "eval_id": 1,
+  "run_type": "without_skill",
+  "expectations": [
+    {"text": "uses-output-format", "passed": false, "evidence": "Report uses custom structure (Summary, Critical Issues, Major Issues) not the project's output-format.md template"},
+    {"text": "includes-score", "passed": false, "evidence": "No numeric score out of 10. Uses 'Recommendation: Request Changes' instead"},
+    {"text": "catches-naming-violation", "passed": true, "evidence": "Finding #2: Property naming violates project conventions - value (camelCase) instead of Value"},
+    {"text": "catches-mutability", "passed": true, "evidence": "Finding #1: Not immutable - property has public setter"},
+    {"text": "catches-missing-sealed", "passed": true, "evidence": "Finding #3: Class is not sealed"},
+    {"text": "catches-factory-name", "passed": true, "evidence": "Finding #7: Factory method named Create instead of Of"},
+    {"text": "catches-test-naming", "passed": true, "evidence": "Test Issues #1: Test method names do not follow conventions"},
+    {"text": "references-file-lines", "passed": false, "evidence": "Uses file names but no specific line numbers (e.g., 'line with public string value')"}
+  ]
+}

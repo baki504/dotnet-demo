@@ -1,0 +1,15 @@
+{
+  "eval_id": 1,
+  "eval_name": "pr-number-reference",
+  "prompt": "review PR #1",
+  "assertions": [
+    {"name": "uses-output-format", "description": "Report follows output-format.md structure with score, summary, and findings sections"},
+    {"name": "includes-score", "description": "Contains a numeric score out of 10"},
+    {"name": "catches-naming-violation", "description": "Flags the camelCase 'value' property (should be PascalCase 'Value')"},
+    {"name": "catches-mutability", "description": "Flags mutable 'set' accessor on value object property"},
+    {"name": "catches-missing-sealed", "description": "Notes class should be sealed"},
+    {"name": "catches-factory-name", "description": "Flags factory method 'Create' should be 'Of' per project convention"},
+    {"name": "catches-test-naming", "description": "Flags test methods don't follow naming convention (What_Condition_Expected)"},
+    {"name": "references-file-lines", "description": "Includes specific file:line references in findings"}
+  ]
+}

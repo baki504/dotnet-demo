@@ -1,0 +1,14 @@
+{
+  "eval_id": 1,
+  "run_type": "with_skill",
+  "expectations": [
+    {"text": "uses-output-format", "passed": true, "evidence": "Report uses exact output-format.md structure: スコア, 概要, 指摘事項 sections with 優先度/理由/対処法/効果 per finding"},
+    {"text": "includes-score", "passed": true, "evidence": "総合スコア: 3 / 10"},
+    {"text": "catches-naming-violation", "passed": true, "evidence": "Finding #6: プロパティ名が PascalCase になっていない - value を Value に変更"},
+    {"text": "catches-mutability", "passed": true, "evidence": "Finding #1: 値オブジェクトが不変（immutable）でない - set アクセサがある"},
+    {"text": "catches-missing-sealed", "passed": true, "evidence": "Finding #7: クラスが sealed でない"},
+    {"text": "catches-factory-name", "passed": true, "evidence": "Finding #2: ファクトリメソッド名が規約に違反 - Create を Of に変更"},
+    {"text": "catches-test-naming", "passed": true, "evidence": "Finding #8: テストメソッド名が命名規約に従っていない - TestCreate -> Of_WithValidPhoneNumber..."},
+    {"text": "references-file-lines", "passed": true, "evidence": "HrAttendance/Domain/ValueObjects/PhoneNumber.cs:8, :10, :17 referenced"}
+  ]
+}

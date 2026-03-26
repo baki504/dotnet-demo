@@ -1,0 +1,14 @@
+{
+  "eval_id": 3,
+  "run_type": "without_skill",
+  "expectations": [
+    {"text": "uses-output-format", "passed": false, "evidence": "Report uses custom structure (Review of PhoneNumber.cs, Issues Found, Summary table) not output-format.md"},
+    {"text": "includes-score", "passed": false, "evidence": "No numeric score out of 10. Uses CRITICAL/MAJOR/MINOR severity counts"},
+    {"text": "catches-naming-violation", "passed": true, "evidence": "Finding #4: Property value uses lowercase - Violates C# naming conventions"},
+    {"text": "catches-mutability", "passed": true, "evidence": "Finding #5: Property has public setter"},
+    {"text": "catches-missing-sealed", "passed": true, "evidence": "Finding #1: Class is not sealed"},
+    {"text": "catches-factory-name", "passed": true, "evidence": "Finding #8: Factory method is Create() instead of Of()"},
+    {"text": "catches-test-naming", "passed": true, "evidence": "Test Issues #1: Test method names do not follow conventions"},
+    {"text": "references-file-lines", "passed": false, "evidence": "Uses file names but no line numbers"}
+  ]
+}
