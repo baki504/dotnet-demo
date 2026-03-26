@@ -1,0 +1,14 @@
+{
+  "eval_id": 3,
+  "run_type": "with_skill",
+  "expectations": [
+    {"text": "uses-output-format", "passed": true, "evidence": "Report uses output-format.md structure: スコア, 概要, 指摘事項 with 優先度/理由/対処法/効果"},
+    {"text": "includes-score", "passed": true, "evidence": "総合スコア: 3 / 10"},
+    {"text": "catches-naming-violation", "passed": true, "evidence": "Finding #2: プロパティ名が命名規約に違反している - camelCase"},
+    {"text": "catches-mutability", "passed": true, "evidence": "Finding #1: 値オブジェクトが不変（immutable）でない"},
+    {"text": "catches-missing-sealed", "passed": true, "evidence": "Finding #6: sealed 修飾子が欠如"},
+    {"text": "catches-factory-name", "passed": true, "evidence": "Finding #3: ファクトリメソッド名が規約に従っていない - Create → Of"},
+    {"text": "catches-test-naming", "passed": true, "evidence": "Finding #7: テストメソッド名が規約に従っていない"},
+    {"text": "references-file-lines", "passed": false, "evidence": "No specific line numbers referenced"}
+  ]
+}
